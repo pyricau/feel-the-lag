@@ -156,9 +156,24 @@ h2 {
 }
 
 .ref {
-  color: var(--muted);
   font-size: 0.7em;
-  margin-left: 1px;
+}
+
+.ref a {
+  text-decoration: none;
+}
+
+.sources li.flash {
+  animation: flash 1.6s ease-out;
+}
+
+@keyframes flash {
+  from {
+    background: rgba(57, 135, 229, 0.35);
+  }
+  to {
+    background: transparent;
+  }
 }
 
 /* Full-screen experience layout */
