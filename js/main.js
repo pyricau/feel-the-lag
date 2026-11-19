@@ -53,6 +53,8 @@ function renderHome() {
         <li>Deber, Jota, Forlines, Wigdor. <a href="https://dl.acm.org/doi/10.1145/2702123.2702300">How Much Faster is Fast Enough? User Perception of Latency &amp; Latency Improvements in Direct and Indirect Touch</a>. CHI 2015. 69 ms for taps, 11 ms for drags.</li>
         <li>Jota, Ng, Dietz, Wigdor. <a href="https://www.tactuallabs.com/papers/howFastIsFastEnoughCHI13.pdf">How Fast is Fast Enough?</a> CHI 2013. The A/B "which was faster" staircase this lab is modeled on.</li>
         <li>web.dev: <a href="https://web.dev/articles/defining-core-web-vitals-thresholds">How the Core Web Vitals thresholds were defined</a>. Why INP is 200 ms when research says 100 ms.</li>
+        <li>Li, Zhu, Qiu, Du, Du. <a href="https://www.tandfonline.com/doi/full/10.1080/0144929X.2025.2462266">Higher refresh rate does not necessarily improve scrolling experience on mobile phones</a>. Behaviour &amp; Information Technology, 2025. 90 and 120 Hz scrolling rated smoother than 60 Hz, little difference between 90 and 120.</li>
+        <li>Janzen, Teather. <a href="https://www.csit.carleton.ca/~rteather/pdfs/Frame_Rate_Latency.pdf">Is 60 FPS Better than 30? The Impact of Frame Rate and Latency on Moving Target Selection</a>. CHI 2014 extended abstracts. Mouse, not touch: dropping from 60 to 30 fps hurt more than the latency it adds.</li>
         <li>Ink &amp; Switch: <a href="https://www.inkandswitch.com/slow-software/">Slow Software</a>.</li>
         <li>James Darpinian: <a href="https://james.darpinian.com/blog/latency/">Why Your Input Latency is Bad</a>. Phil Walton: <a href="https://chrome.dev/inp-demo/">INP demo</a>.</li>
       </ul>

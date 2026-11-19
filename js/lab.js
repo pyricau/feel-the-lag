@@ -32,30 +32,39 @@ export const LAB_DOMAINS = {
     probesMs: [100, 67, 50, 33, 17, 8],
     words: { faster: 'B faster', slower: 'B slower' },
   },
-  fps: {
-    title: 'Scroll frame rate',
-    blurb: 'Fling and drag the list. Either one of A and B draws fewer frames per second, or they are identical.',
-    research: 'At 60 Hz each frame lasts 16.7 ms, already more than the ~11 ms people notice while dragging.',
+  slow: {
+    title: 'Scroll slow frames',
+    blurb: 'Fling and drag the list. Either one of A and B has too much work per frame, so each frame misses the next refresh, or they are identical.',
+    research:
+      'Unlike latency, nobody has published a threshold for slow frames while scrolling. Phone users do rate 90 and 120 Hz scrolling smoother than 60 Hz (Li et al., 2025).',
     make: (root, opts) => new Scroller(root, opts),
-    apply: (exp, value) => exp.setHold(value),
-    kind: 'hold',
-    // Hold each frame for N refreshes: 4 = quarter frame rate.
-    probeHolds: [4, 3, 2],
+    apply: (exp, value) => exp.setOverrun(value),
+    kind: 'overrun',
+    // How long each frame takes. Rounded to whole refreshes; at least 2, since
+    // a frame that fits in one refresh is on time.
+    frameMs: [67, 50, 33, 25, 17],
     words: { faster: 'B smoother', slower: 'B choppier' },
   },
 };
 
 function valueLabel(domain, value) {
-  return domain.kind === 'delay' ? `+${msLabel(value)}` : fpsLabel(value);
+  if (domain.kind === 'delay') return `+${msLabel(value)}`;
+  return value === 1 ? `on time (${fpsLabel(1)})` : `${msLabel(value)} frames (${fpsLabel(value)})`;
 }
 
 /** Probe levels from most to least obvious, as whole frames of this display. */
 function buildLevels(domain) {
-  if (domain.kind === 'hold') {
-    return domain.probeHolds.map((hold) => ({ key: `h${hold}`, label: `${fpsLabel(hold)} vs ${fpsLabel(1)}`, probe: hold }));
-  }
   const seen = new Set();
   const levels = [];
+  if (domain.kind === 'overrun') {
+    for (const ms of domain.frameMs) {
+      const refreshes = Math.round(ms / engine.frameMs);
+      if (refreshes < 2 || seen.has(refreshes)) continue;
+      seen.add(refreshes);
+      levels.push({ key: `o${refreshes}`, label: valueLabel(domain, refreshes), probe: refreshes });
+    }
+    return levels;
+  }
   for (const ms of domain.probesMs) {
     const frames = Math.round(ms / engine.frameMs);
     if (frames < 1 || seen.has(frames)) continue;
@@ -66,7 +75,7 @@ function buildLevels(domain) {
 }
 
 function buildTrials(domain, levels, reps) {
-  const reference = domain.kind === 'hold' ? 1 : 0;
+  const reference = domain.kind === 'overrun' ? 1 : 0;
   const order = [];
   levels.forEach((level, index) => {
     // Roughly most obvious first, narrowing, with some mixing.
@@ -98,7 +107,7 @@ function buildTrials(domain, levels, reps) {
 
 export function renderLabIntro(app, domainKey) {
   const domain = LAB_DOMAINS[domainKey];
-  const reference = domain.kind === 'hold' ? `full frame rate (${fpsLabel(1)})` : 'this phone as-is (+0 ms)';
+  const reference = domain.kind === 'overrun' ? `on time (${fpsLabel(1)})` : 'this phone as-is (+0 ms)';
   app.innerHTML = `
     <div class="page">
       <a class="back" href="#/">‹ Home</a>

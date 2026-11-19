@@ -24,7 +24,7 @@ function clearRuns() {
   } catch {}
 }
 
-/** Size of the probe encoded in a level key ("d4" = 4 frames late, "h2" = every 2nd refresh). */
+/** Size of the probe encoded in a level key ("d4" = 4 frames late, "o2" = each frame takes 2 refreshes). */
 const magnitude = (key) => (key === 'same' ? -1 : Number(key.slice(1)));
 
 function groupByLevel(trials) {
@@ -47,7 +47,12 @@ export function headline(run) {
   const last = groups[spotted];
   let text = `You reliably spotted the difference down to <b>${last.label}</b>.`;
   if (spotted === groups.length - 1) {
-    text += last.key === 'd1' ? ' That is a single frame, the smallest step this display can show.' : ' That is every level in this lab.';
+    text +=
+      last.key === 'd1'
+        ? ' That is a single frame, the smallest step this display can show.'
+        : last.key === 'o2'
+        ? ' That is a frame missing its refresh by any amount, the smallest step this display can show.'
+        : ' That is every level in this lab.';
   } else {
     text += ' Below that, you were mostly guessing.';
   }
