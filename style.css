@@ -593,6 +593,22 @@ details {
   margin: 16px 0;
 }
 
+.findings {
+  margin: -6px 0 16px;
+  padding: 2px 14px;
+  border-left: 3px solid var(--line);
+}
+
+.findings summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.findings p {
+  margin: 8px 0;
+}
+
 .trials {
   width: 100%;
   border-collapse: collapse;

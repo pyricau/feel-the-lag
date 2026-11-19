@@ -36,8 +36,16 @@ function renderHome() {
       </div>
 
       <h2>Why taps and motion differ</h2>
-      <p>When you tap, you judge cause and effect: did the screen react to me? Feedback within about 100 ms feels caused by your tap.<sup class="ref">[3]</sup> Added to a screen that reacts almost instantly, people only notice tap latency from about <b>69 ms</b>.<sup class="ref">[1]</sup> (Noticing here means picking the faster of two versions 3 times out of 4, where guessing gets 2 out of 4.) On a screen that already lags, as phones do, taking away about 33 to 50 ms is enough to notice, while a single frame (17 ms) mostly isn't. And below about 33 ms in total, from finger to pixels, people couldn't tell any improvement at all.<sup class="ref">[1]</sup></p>
-      <p>When you drag or scroll, your finger is a moving reference point and the content is visibly behind it. People notice about <b>11 ms</b> of added latency there,<sup class="ref">[1]</sup> less than one frame at 60 Hz (16.7 ms). That was also measured on an almost instant screen, but it holds up on slower ones: taking a single 60 Hz frame away from a drag reached or came close to the same bar at every starting latency tested, from 8 to 167 ms.<sup class="ref">[1]</sup> So one extra frame of latency while dragging is something people can feel. (The study added steady latency; it didn't test dropped or slow frames.)</p>
+      <p>When you tap, you judge cause and effect: did the screen react to me? Feedback within about 100 ms feels caused by your tap.<sup class="ref">[3]</sup></p>
+      <details class="findings">
+        <summary>Research findings</summary>
+        <p>Added to a screen that reacts almost instantly, people only notice tap latency from about <b>69 ms</b>.<sup class="ref">[1]</sup> (Noticing here means picking the faster of two versions 3 times out of 4, where guessing gets 2 out of 4.) On a screen that already lags, as phones do, taking away about 33 to 50 ms is enough to notice, while a single frame (17 ms) mostly isn't. And below about 33 ms in total, from finger to pixels, people couldn't tell any improvement at all.<sup class="ref">[1]</sup></p>
+      </details>
+      <p>When you drag or scroll, your finger is a moving reference point and the content is visibly behind it.</p>
+      <details class="findings">
+        <summary>Research findings</summary>
+        <p>People notice about <b>11 ms</b> of added latency while dragging,<sup class="ref">[1]</sup> less than one frame at 60 Hz (16.7 ms). That was also measured on an almost instant screen, but it holds up on slower ones: taking a single 60 Hz frame away from a drag reached or came close to the same bar (picking the faster version 3 times out of 4) at every starting latency tested, from 8 to 167 ms.<sup class="ref">[1]</sup> So one extra frame of latency while dragging is something people can feel. (The study added steady latency; it didn't test dropped or slow frames.)</p>
+      </details>
 
       <h2>Latency or slow frames?</h2>
       <p>Both come from code, but from different mistakes, and they feel different. Try each tab of the scroll playground.</p>
