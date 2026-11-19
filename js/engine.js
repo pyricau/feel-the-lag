@@ -17,6 +17,23 @@ function median(values) {
   return sorted[sorted.length >> 1];
 }
 
+// Refresh rates displays actually run at. A measured rate within 3% of one of
+// these is that rate: the measurement is only off because browsers coarsen
+// timestamps (Chrome to 0.1 ms), so a 120 Hz display reports 8.3 and 8.4 ms
+// deltas and their median, 8.3 ms, turns 24 frames into "199 ms".
+const STANDARD_HZ = [24, 30, 48, 50, 60, 72, 75, 90, 96, 100, 120, 144, 165, 180, 240];
+
+function measureFrameMs(deltas) {
+  // Mean of the deltas near the median: the mean undoes the timestamp
+  // rounding, and leaving out the outliers drops skipped frames.
+  const mid = median(deltas);
+  const near = deltas.filter((d) => Math.abs(d - mid) < mid * 0.25);
+  const mean = near.reduce((a, b) => a + b, 0) / near.length;
+  const hz = 1000 / mean;
+  const standard = STANDARD_HZ.find((s) => Math.abs(hz - s) / s < 0.03);
+  return standard ? 1000 / standard : mean;
+}
+
 function loop(frameTime) {
   tick++;
   if (lastFrameTime !== null) {
@@ -29,7 +46,7 @@ function loop(frameTime) {
   }
   lastFrameTime = frameTime;
   if (frameDeltas.length >= 10 && tick % 10 === 0) {
-    frameMs = median(frameDeltas);
+    frameMs = measureFrameMs(frameDeltas);
     if (frameDeltas.length >= 20) resolveReady();
   }
 
