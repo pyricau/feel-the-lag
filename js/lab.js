@@ -20,7 +20,7 @@ export const LAB_DOMAINS = {
     apply: (exp, value) => exp.setDelayFrames(value),
     kind: 'delay',
     probesMs: [150, 100, 67, 50, 33, 17],
-    words: { faster: 'B faster', slower: 'B slower' },
+    better: 'faster',
   },
   scroll: {
     title: 'Scroll latency',
@@ -30,7 +30,7 @@ export const LAB_DOMAINS = {
     apply: (exp, value) => exp.setLatencyFrames(value),
     kind: 'delay',
     probesMs: [100, 67, 50, 33, 17, 8],
-    words: { faster: 'B faster', slower: 'B slower' },
+    better: 'faster',
   },
   slow: {
     title: 'Scroll slow frames',
@@ -43,7 +43,7 @@ export const LAB_DOMAINS = {
     // How long each frame takes. Rounded to whole refreshes; at least 2, since
     // a frame that fits in one refresh is on time.
     frameMs: [67, 50, 33, 25, 17],
-    words: { faster: 'B smoother', slower: 'B choppier' },
+    better: 'smoother',
   },
 };
 
@@ -91,7 +91,9 @@ function buildTrials(domain, levels, reps) {
     const probeIsB = Math.random() < 0.5;
     const a = probeIsB ? reference : level.probe;
     const b = probeIsB ? level.probe : reference;
-    const truth = b > a ? 'slower' : b < a ? 'faster' : 'same';
+    // Like the research, you name the better side, so the answer buttons line
+    // up with the A and B buttons above them.
+    const truth = a < b ? 'A' : b < a ? 'B' : 'same';
     return {
       levelKey: level.key,
       levelLabel: level.label,
@@ -113,7 +115,7 @@ export function renderLabIntro(app, domainKey) {
       <a class="back" href="#/">‹ Home</a>
       <h1>Lab: ${domain.title}</h1>
       <p>Each trial has two versions, <b>A</b> and <b>B</b>. ${domain.blurb}</p>
-      <p>One side is always ${reference}; the other is slowed down, in random order. Switch between A and B as often as you like, then say how B compared to A. The slowdowns start big and get smaller, and some pairs are identical.</p>
+      <p>One side is always ${reference}; the other is slowed down, in random order. Switch between A and B as often as you like, then say which one was ${domain.better}, or if they felt the same. The slowdowns start big and get smaller, and some pairs are identical.</p>
       <p class="muted">${domain.research}</p>
       <label class="check"><input type="checkbox" id="reveal" checked> Show the answer after each trial</label>
       <div class="device-slot"></div>
@@ -151,9 +153,9 @@ export function renderLabRun(app, domainKey, params) {
       <div class="answers">
         <div class="hint"></div>
         <div class="answer-row">
-          <button data-answer="faster">${domain.words.faster}</button>
-          <button data-answer="same">About the same</button>
-          <button data-answer="slower">${domain.words.slower}</button>
+          <button data-answer="A">A ${domain.better}</button>
+          <button data-answer="same">Same</button>
+          <button data-answer="B">B ${domain.better}</button>
         </div>
       </div>
       <div class="reveal hidden"></div>
@@ -183,7 +185,7 @@ export function renderLabRun(app, domainKey, params) {
   function updateControls() {
     const ready = tried.A && tried.B;
     answerButtons.forEach((b) => (b.disabled = !ready));
-    if (ready) hint.textContent = 'How did B compare to A?';
+    if (ready) hint.textContent = `Which one was ${domain.better}?`;
     else if (!tried.A) hint.textContent = 'Try A first.';
     else if (side === 'A') hint.textContent = 'Now switch to B.';
     else hint.textContent = 'Try B.';
@@ -207,7 +209,7 @@ export function renderLabRun(app, domainKey, params) {
     })
   );
 
-  const answerText = (answer) => (answer === 'same' ? 'about the same' : domain.words[answer]);
+  const answerText = (answer) => (answer === 'same' ? 'the same' : `${answer} ${domain.better}`);
 
   function showReveal(trial) {
     const right = trial.answer === trial.truth;

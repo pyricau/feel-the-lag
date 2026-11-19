@@ -62,7 +62,7 @@ export function headline(run) {
 function cell(t) {
   const identical = t.truth === 'same';
   const symbol = t.answer === 'same' ? '=' : identical || !isRight(t) ? '✗' : '✓';
-  const said = t.answer === 'same' ? 'about the same' : `B ${t.answer}`;
+  const said = t.answer === 'same' ? 'the same' : t.answer.length === 1 ? `${t.answer} better` : `B ${t.answer}`;
   return `<span class="cell ${isRight(t) ? 'right' : 'wrong'}" title="A ${t.a} · B ${t.b} · you said ${said}">${symbol}</span>`;
 }
 
@@ -89,15 +89,15 @@ export function resultsHtml(run) {
     .join('');
   return `
     <p class="headline">${headline(run)}</p>
-    ${identical ? `<p class="muted">On identical pairs you said "about the same" ${sameCount} of ${identical.trials.length} times.</p>` : ''}
+    ${identical ? `<p class="muted">On identical pairs you said "same" ${sameCount} of ${identical.trials.length} times.</p>` : ''}
     <div class="legend">
       <span><i class="cell right">✓</i>right</span>
       <span><i class="cell wrong">✗</i>wrong</span>
-      <span><i class="cell wrong">=</i>you said "about the same"</span>
+      <span><i class="cell wrong">=</i>you said "same"</span>
     </div>
     <div class="results">${rows}</div>
     <details><summary>All trials</summary>
-      <table class="trials"><thead><tr><th>#</th><th>A</th><th>B</th><th>B was</th><th>You said</th><th></th></tr></thead>
+      <table class="trials"><thead><tr><th>#</th><th>A</th><th>B</th><th>Better</th><th>You said</th><th></th></tr></thead>
       <tbody>${table}</tbody></table>
     </details>`;
 }
