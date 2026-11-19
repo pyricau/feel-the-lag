@@ -14,6 +14,7 @@ const pick = (list) => list[Math.floor(Math.random() * list.length)];
 export const LAB_DOMAINS = {
   tap: {
     title: 'Tap response',
+    question: 'Can you tell when a keypad shows your taps a little late?',
     blurb: 'Tap the keypad. Either one of A and B shows your taps later, or they are identical.',
     research: 'People notice about 69 ms of added tap latency on a touchscreen (Deber et al., CHI 2015).',
     make: (root, opts) => new Keypad(root, opts),
@@ -24,6 +25,7 @@ export const LAB_DOMAINS = {
   },
   scroll: {
     title: 'Scroll latency',
+    question: 'Can you tell when a list trails a little behind your finger?',
     blurb: 'Drag the list slowly up and down and watch a row under your finger. Either one of A and B follows your finger later, or they are identical.',
     research: 'People notice about 11 ms of added drag latency on a touchscreen (Deber et al., CHI 2015).',
     make: (root, opts) => new Scroller(root, opts),
@@ -34,6 +36,7 @@ export const LAB_DOMAINS = {
   },
   slow: {
     title: 'Scroll slow frames',
+    question: 'Can you tell smooth scrolling from scrolling at a lower frame rate?',
     blurb: 'Fling and drag the list. Either one of A and B has too much work per frame, so each frame misses the next refresh, or they are identical.',
     research:
       'Unlike latency, nobody has published a threshold for slow frames while scrolling. Phone users do rate 90 and 120 Hz scrolling smoother than 60 Hz (Li et al., 2025).',

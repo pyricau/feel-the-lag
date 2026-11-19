@@ -19,7 +19,7 @@ const SCROLL_CONTROLS = [
     label: (f) => `+${msLabel(f)}`,
     explain: (f) =>
       f === 0
-        ? 'Every frame shows where your finger is right now.'
+        ? 'Every frame shows where your finger is right now. Each tab slows scrolling down in a different way: try them all and see which feels worst.'
         : `Still ${fpsLabel(1)}: every frame is on time, but shows where your finger was ${plural(f, 'frame')} (${msLabel(
             f
           )}) ago, so the list trails it smoothly. In code: nothing is slow, but the touch waits a frame or more before it's used (posted callbacks, async hops, queued frames).`,
