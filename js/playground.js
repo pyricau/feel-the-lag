@@ -122,17 +122,25 @@ export function renderPlayground(app, domainKey) {
   const stopDevice = deviceBar(app.querySelector('.device-slot'));
   const experience = isTap ? new Keypad(stage) : new Scroller(stage);
 
+  // Only the visible tab's setting is applied, so each effect is felt on its
+  // own. The others keep their slider value for when you come back.
+  let activeTab = controls[0].name;
+  const values = Object.fromEntries(controls.map((c) => [c.name, c.min ?? 0]));
+  const applyActive = () => {
+    for (const c of controls) c.apply(experience, c.name === activeTab ? values[c.name] : c.min ?? 0);
+  };
+
   for (const c of controls) {
     const wrap = app.querySelector(`[data-control="${c.name}"]`);
     const input = wrap.querySelector('input');
     const set = (v) => {
       v = Number(v);
+      values[c.name] = v;
       input.value = v;
       wrap.querySelector('output').textContent = c.label(v);
       wrap.querySelector('.explain').textContent = c.explain(v);
       wrap.querySelectorAll('.chip').forEach((chip) => chip.classList.toggle('active', Number(chip.dataset.value) === v));
-      app.querySelector(`[data-tab="${c.name}"]`)?.classList.toggle('changed', v !== (c.min ?? 0));
-      c.apply(experience, v);
+      applyActive();
     };
     input.addEventListener('input', () => set(input.value));
     wrap.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => set(chip.dataset.value)));
@@ -140,11 +148,13 @@ export function renderPlayground(app, domainKey) {
   }
 
   const showTab = (name) => {
+    activeTab = name;
     app.querySelectorAll('[data-control]').forEach((w) => w.classList.toggle('hidden', w.dataset.control !== name));
     app.querySelectorAll('[data-tab]').forEach((t) => t.classList.toggle('active', t.dataset.tab === name));
+    applyActive();
   };
   app.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => showTab(t.dataset.tab)));
-  showTab(controls[0].name);
+  showTab(activeTab);
 
   return () => {
     stopDevice();

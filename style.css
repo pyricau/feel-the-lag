@@ -428,11 +428,6 @@ h2 {
   background: rgba(57, 135, 229, 0.25);
 }
 
-.tabs button.changed::after {
-  content: ' •';
-  color: #fab219;
-}
-
 .control.hidden {
   display: none;
 }
