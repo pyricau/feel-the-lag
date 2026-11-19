@@ -36,8 +36,8 @@ function renderHome() {
       </div>
 
       <h2>Why taps and motion differ</h2>
-      <p>When you tap, you judge cause and effect: did the screen react to me? Feedback within about 100 ms feels caused by your tap, and the average person only notices added tap latency around <b>69 ms</b>.</p>
-      <p>When you drag or scroll, your finger is a moving reference point and the content is visibly behind it. People notice about <b>11 ms</b> of added latency there. That is less than one frame at 60 Hz (16.7 ms), so a single late or missed frame during a scroll is noticeable.</p>
+      <p>When you tap, you judge cause and effect: did the screen react to me? Feedback within about 100 ms feels caused by your tap, and the average person only notices added tap latency around <b>69 ms</b>. When a tap already has some latency, taking 33 ms or more away from it is often noticed; taking away a single frame (17 ms) mostly isn't.</p>
+      <p>When you drag or scroll, your finger is a moving reference point and the content is visibly behind it. People notice about <b>11 ms</b> of added latency there, less than one frame at 60 Hz (16.7 ms). Those thresholds were measured against a research setup with almost no latency of its own, but it holds up with more: taking a single 60 Hz frame of latency away from a drag was usually noticed at every starting latency tested, from 8 to 167 ms, which covers real phones. So one extra frame of latency while dragging is something people can feel. (The study added steady latency; it didn't test dropped or slow frames.)</p>
 
       <h2>Latency or slow frames?</h2>
       <p>Both come from code, but from different mistakes, and they feel different. Try each tab of the scroll playground.</p>
