@@ -2,9 +2,15 @@ import { engine } from './engine.js';
 import { renderLabIntro, renderLabRun, LAB_DOMAINS } from './lab.js';
 import { renderPlayground } from './playground.js';
 import { deviceBar } from './device.js';
+import { loadRuns, renderHistory } from './history.js';
 
 const app = document.getElementById('app');
 let cleanup = null;
+
+function runsCount() {
+  const n = loadRuns().length;
+  return n ? ` (${n})` : '';
+}
 
 function renderHome() {
   app.innerHTML = `
@@ -19,6 +25,8 @@ function renderHome() {
           .map(([key, d]) => `<a class="card" href="#/lab/${key}"><b>${d.title}</b><span>${d.research}</span></a>`)
           .join('')}
       </div>
+
+      <a class="history-link" href="#/history">Your past runs${runsCount()}</a>
 
       <h2>Playground</h2>
       <p class="muted">Pick a delay and feel it.</p>
@@ -58,6 +66,8 @@ function route() {
 
   if (parts[0] === 'lab' && LAB_DOMAINS[parts[1]]) {
     cleanup = parts[2] === 'run' ? renderLabRun(app, parts[1], params) : renderLabIntro(app, parts[1]);
+  } else if (parts[0] === 'history') {
+    renderHistory(app);
   } else if (parts[0] === 'play' && (parts[1] === 'tap' || parts[1] === 'scroll')) {
     cleanup = renderPlayground(app, parts[1]);
   } else {

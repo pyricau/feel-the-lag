@@ -7,8 +7,10 @@ A static web demo that lets people feel UI performance thresholds on their own p
 
 Two modes:
 
-- **Lab**: blind A/B trials ("was B faster, slower, or about the same as A?"), gaps shrinking from obvious to
-  imperceptible, with identical pairs mixed in. Results show where you stopped being able to tell.
+- **Lab**: A/B trials ("was B faster, slower, or about the same as A?"). Like the research, one side is always the
+  reference (the phone as-is, +0 ms, or full frame rate) and the other is slowed down, in random order, with identical
+  pairs mixed in. Slowdowns go from obvious to imperceptible, and the results show the smallest one you reliably
+  spotted: your just-noticeable difference. Runs are saved in `localStorage` and listed under "Your past runs".
 - **Playground**: set a tap delay, scroll latency, frame rate or dropped-frame rate and feel it.
 
 No build step and no backend: open `index.html` through any static server (ES modules don't load from `file://`):

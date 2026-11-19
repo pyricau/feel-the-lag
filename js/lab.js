@@ -2,42 +2,45 @@ import { engine, msLabel, fpsLabel } from './engine.js';
 import { Keypad } from './keypad.js';
 import { Scroller } from './scroller.js';
 import { deviceBar } from './device.js';
+import { saveRun, resultsHtml } from './history.js';
 
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
+// Like the research (Jota et al. 2013, Deber et al. 2015), every trial compares
+// a reference against a probe: one side is this phone as-is (+0 ms, full frame
+// rate), the other has something added, in random order. The question is
+// whether you can tell which one it was; the smallest addition you reliably
+// spot is your just-noticeable difference.
 export const LAB_DOMAINS = {
   tap: {
     title: 'Tap response',
-    blurb: 'Tap the keypad. One of A and B shows your taps later than the other, or they are identical.',
+    blurb: 'Tap the keypad. Either one of A and B shows your taps later, or they are identical.',
     research: 'People notice about 69 ms of added tap latency on a touchscreen (Deber et al., CHI 2015).',
     make: (root, opts) => new Keypad(root, opts),
     apply: (exp, value) => exp.setDelayFrames(value),
     kind: 'delay',
-    gapsMs: [150, 100, 67, 33, 17],
-    basesMs: [0, 17, 33, 50],
+    probesMs: [150, 100, 67, 50, 33, 17],
     words: { faster: 'B faster', slower: 'B slower' },
   },
   scroll: {
     title: 'Scroll latency',
-    blurb: 'Drag the list slowly up and down, watch a row under your finger. One of A and B follows your finger later than the other, or they are identical.',
+    blurb: 'Drag the list slowly up and down and watch a row under your finger. Either one of A and B follows your finger later, or they are identical.',
     research: 'People notice about 11 ms of added drag latency on a touchscreen (Deber et al., CHI 2015).',
     make: (root, opts) => new Scroller(root, opts),
     apply: (exp, value) => exp.setLatencyFrames(value),
     kind: 'delay',
-    gapsMs: [100, 67, 33, 17, 8],
-    basesMs: [0, 17, 33],
+    probesMs: [100, 67, 50, 33, 17, 8],
     words: { faster: 'B faster', slower: 'B slower' },
   },
   fps: {
     title: 'Scroll frame rate',
-    blurb: 'Fling and drag the list. One of A and B draws fewer frames per second than the other, or they are identical.',
+    blurb: 'Fling and drag the list. Either one of A and B draws fewer frames per second, or they are identical.',
     research: 'At 60 Hz each frame lasts 16.7 ms, already more than the ~11 ms people notice while dragging.',
     make: (root, opts) => new Scroller(root, opts),
     apply: (exp, value) => exp.setHold(value),
     kind: 'hold',
-    // Pairs of "hold each frame for N refreshes"; first is the smoother one.
-    pairs: [[1, 4], [1, 3], [1, 2], [2, 3]],
-    catchPairs: [[1, 1], [2, 2]],
+    // Hold each frame for N refreshes: 4 = quarter frame rate.
+    probeHolds: [4, 3, 2],
     words: { faster: 'B smoother', slower: 'B choppier' },
   },
 };
@@ -46,74 +49,62 @@ function valueLabel(domain, value) {
   return domain.kind === 'delay' ? `+${msLabel(value)}` : fpsLabel(value);
 }
 
-/** Levels from biggest to smallest difference, resolved to whole frames for this display. */
+/** Probe levels from most to least obvious, as whole frames of this display. */
 function buildLevels(domain) {
-  const frameMs = engine.frameMs;
   if (domain.kind === 'hold') {
-    return domain.pairs.map(([lo, hi]) => ({
-      key: `${lo}:${hi}`,
-      label: `${fpsLabel(lo)} vs ${fpsLabel(hi)}`,
-      values: () => [lo, hi],
-    }));
+    return domain.probeHolds.map((hold) => ({ key: `h${hold}`, label: `${fpsLabel(hold)} vs ${fpsLabel(1)}`, probe: hold }));
   }
   const seen = new Set();
   const levels = [];
-  for (const ms of domain.gapsMs) {
-    const gap = Math.round(ms / frameMs);
-    if (gap < 1 || seen.has(gap)) continue;
-    seen.add(gap);
-    levels.push({
-      key: `g${gap}`,
-      label: `${msLabel(gap)} gap`,
-      values: () => {
-        const base = Math.round(pick(domain.basesMs) / frameMs);
-        return [base, base + gap];
-      },
-    });
+  for (const ms of domain.probesMs) {
+    const frames = Math.round(ms / engine.frameMs);
+    if (frames < 1 || seen.has(frames)) continue;
+    seen.add(frames);
+    levels.push({ key: `d${frames}`, label: `+${msLabel(frames)}`, probe: frames });
   }
   return levels;
 }
 
 function buildTrials(domain, levels, reps) {
-  const trials = [];
+  const reference = domain.kind === 'hold' ? 1 : 0;
+  const order = [];
   levels.forEach((level, index) => {
-    for (let r = 0; r < reps; r++) {
-      // Roughly biggest gaps first, narrowing, with some mixing.
-      trials.push({ level, sortKey: index + Math.random() * 1.6 });
-    }
+    // Roughly most obvious first, narrowing, with some mixing.
+    for (let r = 0; r < reps; r++) order.push({ level, sortKey: index + Math.random() * 1.6 });
   });
-  const catchLevel = {
-    key: 'same',
-    label: 'Identical',
-    values: () => {
-      if (domain.kind === 'hold') return pick(domain.catchPairs);
-      const base = Math.round(pick(domain.basesMs) / engine.frameMs);
-      return [base, base];
-    },
-  };
-  const catches = Math.max(2, Math.round(trials.length / 5));
+  const identical = { key: 'same', label: 'Identical', probe: reference };
+  const catches = Math.max(2, Math.round(order.length / 5));
   for (let i = 0; i < catches; i++) {
-    trials.push({ level: catchLevel, sortKey: levels.length * (0.3 + Math.random() * 0.7) });
+    order.push({ level: identical, sortKey: levels.length * (0.3 + Math.random() * 0.7) });
   }
-  trials.sort((a, b) => a.sortKey - b.sortKey);
-  return trials.map(({ level }) => {
-    const [lo, hi] = level.values();
-    const swap = Math.random() < 0.5;
-    const a = swap ? hi : lo;
-    const b = swap ? lo : hi;
+  order.sort((x, y) => x.sortKey - y.sortKey);
+  return order.map(({ level }) => {
+    const probeIsB = Math.random() < 0.5;
+    const a = probeIsB ? reference : level.probe;
+    const b = probeIsB ? level.probe : reference;
     const truth = b > a ? 'slower' : b < a ? 'faster' : 'same';
-    return { level, a, b, truth, answer: null };
+    return {
+      levelKey: level.key,
+      levelLabel: level.label,
+      a: valueLabel(domain, a),
+      b: valueLabel(domain, b),
+      aValue: a,
+      bValue: b,
+      truth,
+      answer: null,
+    };
   });
 }
 
 export function renderLabIntro(app, domainKey) {
   const domain = LAB_DOMAINS[domainKey];
+  const reference = domain.kind === 'hold' ? `full frame rate (${fpsLabel(1)})` : 'this phone as-is (+0 ms)';
   app.innerHTML = `
     <div class="page">
       <a class="back" href="#/">‹ Home</a>
       <h1>Lab: ${domain.title}</h1>
       <p>Each trial has two versions, <b>A</b> and <b>B</b>. ${domain.blurb}</p>
-      <p>Switch between A and B as often as you like, then say how B compared to A. The differences start big and get smaller.</p>
+      <p>One side is always ${reference}; the other is slowed down, in random order. Switch between A and B as often as you like, then say how B compared to A. The slowdowns start big and get smaller, and some pairs are identical.</p>
       <p class="muted">${domain.research}</p>
       <label class="check"><input type="checkbox" id="reveal" checked> Show the answer after each trial</label>
       <div class="device-slot"></div>
@@ -175,7 +166,7 @@ export function renderLabRun(app, domainKey, params) {
     side = next;
     const trial = trials[index];
     experience.reset();
-    domain.apply(experience, side === 'A' ? trial.a : trial.b);
+    domain.apply(experience, side === 'A' ? trial.aValue : trial.bValue);
     sideButtons.forEach((b) => b.classList.toggle('active', b.dataset.side === side));
     updateControls();
   }
@@ -207,16 +198,14 @@ export function renderLabRun(app, domainKey, params) {
     })
   );
 
-  function answerText(answer) {
-    return answer === 'same' ? 'about the same' : domain.words[answer];
-  }
+  const answerText = (answer) => (answer === 'same' ? 'about the same' : domain.words[answer]);
 
   function showReveal(trial) {
     const right = trial.answer === trial.truth;
     revealBox.innerHTML = `
       <div class="reveal-card">
         <div class="verdict ${right ? 'right' : 'wrong'}">${right ? '✓ Right' : '✗ Not quite'}</div>
-        <div>A: <b>${valueLabel(domain, trial.a)}</b> · B: <b>${valueLabel(domain, trial.b)}</b></div>
+        <div>A: <b>${trial.a}</b> · B: <b>${trial.b}</b></div>
         <div>Truth: ${answerText(trial.truth)}. You said: ${answerText(trial.answer)}.</div>
         <button class="primary" id="next">${index + 1 < trials.length ? 'Next trial' : 'See results'}</button>
       </div>`;
@@ -227,69 +216,36 @@ export function renderLabRun(app, domainKey, params) {
   function next() {
     index++;
     if (index < trials.length) startTrial();
-    else showResults();
+    else finish();
   }
 
-  function showResults() {
+  function finish() {
     experience.destroy();
-    renderResults(app, domainKey, domain, trials, reveal);
+    const run = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      domain: domainKey,
+      title: domain.title,
+      hz: Math.round(engine.hz),
+      reveal,
+      trials: trials.map(({ aValue, bValue, ...t }) => t),
+    };
+    saveRun(run);
+    app.innerHTML = `
+      <div class="page">
+        <a class="back" href="#/">‹ Home</a>
+        <h1>Results: ${domain.title}</h1>
+        ${resultsHtml(run)}
+        <p class="muted">${domain.research} Each row is only a few trials, so treat it as a demo, not a measurement. ${
+          domain.kind === 'delay' ? '"+0 ms" is this phone as-is, which already has its own touch-to-screen delay.' : ''
+        }</p>
+        <div class="actions">
+          <a class="button primary" href="#/lab/${domainKey}/run?${reveal ? '' : 'blind&'}again=${run.id}">Run again</a>
+          <a class="button" href="#/history">All past runs</a>
+        </div>
+      </div>`;
   }
 
   startTrial();
   return () => experience.destroy();
-}
-
-function renderResults(app, domainKey, domain, trials, reveal) {
-  const groups = new Map();
-  for (const t of trials) {
-    if (!groups.has(t.level.key)) groups.set(t.level.key, { level: t.level, trials: [] });
-    groups.get(t.level.key).trials.push(t);
-  }
-  const ordered = [...groups.values()].sort((a, b) => (a.level.key === 'same') - (b.level.key === 'same'));
-
-  const rows = ordered
-    .map(({ level, trials: ts }) => {
-      const n = ts.length;
-      const right = ts.filter((t) => t.answer === t.truth).length;
-      const same = level.key === 'same' ? 0 : ts.filter((t) => t.answer === 'same').length;
-      const wrong = n - right - same;
-      const seg = (count, cls, label) =>
-        count ? `<div class="seg ${cls}" style="flex:${count}" title="${label}: ${count} of ${n}"></div>` : '';
-      return `
-        <div class="res-row">
-          <div class="res-label">${level.label}</div>
-          <div class="bar">${seg(right, 'right', 'Right')}${seg(same, 'same', 'Said "same"')}${seg(wrong, 'wrong', 'Wrong')}</div>
-          <div class="res-count">${right}/${n}</div>
-        </div>`;
-    })
-    .join('');
-
-  const table = trials
-    .map(
-      (t, i) => `<tr><td>${i + 1}</td><td>${valueLabel(domain, t.a)}</td><td>${valueLabel(domain, t.b)}</td>
-        <td>${t.truth}</td><td>${t.answer}</td><td>${t.answer === t.truth ? '✓' : '✗'}</td></tr>`
-    )
-    .join('');
-
-  app.innerHTML = `
-    <div class="page">
-      <a class="back" href="#/">‹ Home</a>
-      <h1>Results: ${domain.title}</h1>
-      <div class="legend">
-        <span><i class="sw right"></i>Right</span>
-        <span><i class="sw same"></i>Said "about the same"</span>
-        <span><i class="sw wrong"></i>Wrong way round</span>
-      </div>
-      <div class="results">${rows}</div>
-      <p>Where the green runs out, you were guessing: below that difference, faster and slower feel the same.</p>
-      <p class="muted">${domain.research} Each row is only a few trials, so treat it as a demo, not a measurement. "+0 ms" is this phone as-is, which already has its own touch-to-screen delay.</p>
-      <details><summary>All trials</summary>
-        <table class="trials"><thead><tr><th>#</th><th>A</th><th>B</th><th>B was</th><th>You said</th><th></th></tr></thead>
-        <tbody>${table}</tbody></table>
-      </details>
-      <div class="actions">
-        <a class="button primary" href="#/lab/${domainKey}/run?${reveal ? '' : 'blind&'}again=${Date.now()}">Run again</a>
-        <a class="button" href="#/">Home</a>
-      </div>
-    </div>`;
 }
