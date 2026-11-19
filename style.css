@@ -409,6 +409,41 @@ h2 {
   gap: 6px;
 }
 
+.tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+}
+
+.tabs button {
+  padding: 7px 2px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tabs button.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: rgba(57, 135, 229, 0.25);
+}
+
+.tabs button.changed::after {
+  content: ' •';
+  color: #fab219;
+}
+
+.control.hidden {
+  display: none;
+}
+
+.explain {
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 3.2em;
+  margin-top: 4px;
+}
+
 .controls .device {
   margin: 2px 0 0;
 }

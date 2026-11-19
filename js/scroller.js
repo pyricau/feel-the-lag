@@ -39,14 +39,16 @@ function rowsHtml(count) {
  * frame, keeps a history of it, and displays:
  *  - the position from N frames ago (added latency), and/or
  *  - a new position only every H frames (reduced frame rate), and/or
+ *  - both at once, when each frame takes K refreshes of work (overrun), and/or
  *  - random stalls of 1-3 frames (jank).
- * With all three at their defaults it renders the current position every frame.
+ * With everything at its default it renders the current position every frame.
  */
 export class Scroller {
   constructor(root, { onInteract } = {}) {
     this.onInteract = onInteract;
     this.latencyFrames = 0;
     this.hold = 1;
+    this.overrun = 1;
     this.jank = 0;
 
     root.innerHTML = `<div class="scroller"><div class="scroll-content">${rowsHtml(150)}</div></div>`;
@@ -181,10 +183,14 @@ export class Scroller {
 
     this.history.push(this.pos);
     if (this.history.length > 64) this.history.shift();
-    const delayed = this.history[Math.max(0, this.history.length - 1 - this.latencyFrames)];
+    // A frame that needs K refreshes of work samples the input when it starts and
+    // reaches the screen K - 1 refreshes later than an on-time frame would, and
+    // the next frame can only start then: lower frame rate *and* added latency.
+    const lag = this.latencyFrames + this.overrun - 1;
+    const delayed = this.history[Math.max(0, this.history.length - 1 - lag)];
 
     this.frameCount = (this.frameCount ?? 0) + 1;
-    if (this.frameCount % this.hold !== 0) return;
+    if (this.frameCount % Math.max(this.hold, this.overrun) !== 0) return;
     if (this.stall > 0) {
       this.stall--;
       return;
@@ -208,6 +214,11 @@ export class Scroller {
 
   setHold(hold) {
     this.hold = hold;
+  }
+
+  /** Each frame takes this many refreshes to produce, as if it had too much work to fit in one. */
+  setOverrun(refreshes) {
+    this.overrun = refreshes;
   }
 
   setJank(probability) {
