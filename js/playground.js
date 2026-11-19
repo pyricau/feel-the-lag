@@ -1,6 +1,6 @@
 import { engine, msLabel, fpsLabel } from './engine.js';
 import { Keypad } from './keypad.js';
-import { Scroller } from './scroller.js';
+import { Scroller, JANK_RATE } from './scroller.js';
 import { deviceBar } from './device.js';
 
 const framesFor = (ms) => Math.max(1, Math.round(ms / engine.frameMs));
@@ -59,15 +59,17 @@ const SCROLL_CONTROLS = [
   {
     name: 'jank',
     tab: 'Jank',
-    max: () => 30,
-    presets: () => [0, 2, 5, 10, 20],
-    label: (p) => (p ? `${p}% of frames` : 'none'),
-    chip: (p) => (p ? `${p}%` : 'none'),
-    explain: (p) =>
-      p === 0
-        ? 'No dropped frames.'
-        : `Random freezes of 1 to 3 frames on ${p}% of frames, like a garbage collection pause or one slow list item.`,
-    apply: (s, p) => s.setJank(p / 100),
+    max: () => 12,
+    presets: () => [0, 1, 2, 4, 8],
+    label: (f) => (f ? `${plural(f, 'frame')} frozen` : 'none'),
+    chip: (f) => (f ? `${f}` : 'none'),
+    explain: (f) =>
+      f === 0
+        ? 'No frozen frames.'
+        : `${JANK_RATE * 100}% of frames, at random, freeze the screen for ${plural(f, 'frame')} (${msLabel(
+            f
+          )}), then the list jumps to where it should be.`,
+    apply: (s, f) => s.setFreezeFrames(f),
   },
 ];
 

@@ -7,6 +7,7 @@ const SPRING_OMEGA = 0.016; // rad/ms
 const RUBBER = 0.55; // iOS rubber-band constant
 const MAX_VELOCITY = 8; // px/ms
 const VELOCITY_WINDOW = 100; // ms of samples used to compute the release velocity
+export const JANK_RATE = 0.2; // share of frames that start a freeze
 
 const NAMES = [
   'Flat white', 'Croissant', 'Oat latte', 'Pain au chocolat', 'Espresso', 'Cold brew',
@@ -40,7 +41,7 @@ function rowsHtml(count) {
  *  - the position from N frames ago (added latency), and/or
  *  - a new position only every H frames (reduced frame rate), and/or
  *  - both at once, when each frame takes K refreshes of work (overrun), and/or
- *  - random stalls of 1-3 frames (jank).
+ *  - freezes of F frames that start on a random 20% of frames (jank).
  * With everything at its default it renders the current position every frame.
  */
 export class Scroller {
@@ -49,7 +50,7 @@ export class Scroller {
     this.latencyFrames = 0;
     this.hold = 1;
     this.overrun = 1;
-    this.jank = 0;
+    this.freezeFrames = 0;
 
     root.innerHTML = `<div class="scroller"><div class="scroll-content">${rowsHtml(150)}</div></div>`;
     this.viewport = root.querySelector('.scroller');
@@ -195,8 +196,8 @@ export class Scroller {
       this.stall--;
       return;
     }
-    if (this.jank > 0 && Math.random() < this.jank) {
-      this.stall = Math.floor(Math.random() * 3); // this frame plus 0-2 more
+    if (this.freezeFrames > 0 && Math.random() < JANK_RATE) {
+      this.stall = this.freezeFrames - 1; // this frame plus the rest of the freeze
       return;
     }
     this.render(delayed);
@@ -221,8 +222,9 @@ export class Scroller {
     this.overrun = refreshes;
   }
 
-  setJank(probability) {
-    this.jank = probability;
+  /** Each frame has a JANK_RATE chance of freezing the screen for this many frames. */
+  setFreezeFrames(frames) {
+    this.freezeFrames = frames;
   }
 
   reset() {
