@@ -36,7 +36,7 @@ function renderHome() {
       <p class="lede">How much slower does an app have to be before you notice? It depends a lot on what you're doing.</p>
 
       <h2>Lab</h2>
-      <p class="muted">Find your own limits. Compare two versions blind and say which was faster. The gap starts big and gets smaller, and the results show the smallest difference you could still tell.</p>
+      <p class="muted">Find your own limits. Compare two versions blind and say which was faster.</p>
       <div class="cards">
         ${Object.entries(LAB_DOMAINS)
           .map(([key, d]) => `<a class="card" href="#/lab/${key}"><b>${d.title}</b><span>${d.question}</span></a>`)
