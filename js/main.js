@@ -19,7 +19,7 @@ function renderHome() {
       <p class="lede">How much slower does an app have to be before you notice? It depends a lot on what you're doing.</p>
 
       <h2>Lab</h2>
-      <p class="muted">Compare two versions blind and say which was faster. The gap starts big and gets smaller, and the results show the smallest one you could still tell.</p>
+      <p class="muted">Find your own limits. Compare two versions blind and say which was faster. The gap starts big and gets smaller, and the results show the smallest difference you could still tell.</p>
       <div class="cards">
         ${Object.entries(LAB_DOMAINS)
           .map(([key, d]) => `<a class="card" href="#/lab/${key}"><b>${d.title}</b><span>${d.question}</span></a>`)
@@ -29,7 +29,7 @@ function renderHome() {
       <a class="history-link" href="#/history">Your past runs${runsCount()}</a>
 
       <h2>Playground</h2>
-      <p class="muted">Pick a delay and feel it.</p>
+      <p class="muted">Find what feels fine and what feels bad. Pick a kind of slowness, set how much, and feel it.</p>
       <div class="cards">
         <a class="card" href="#/play/tap"><b>Tap response</b><span>Delay how quickly a keypad shows your taps.</span></a>
         <a class="card" href="#/play/scroll"><b>Scroll</b><span>Add latency, lower the frame rate, or slow down or freeze frames. Try each tab and see which feels worst.</span></a>
