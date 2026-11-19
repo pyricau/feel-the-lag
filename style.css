@@ -155,6 +155,12 @@ h2 {
   margin-bottom: 6px;
 }
 
+.ref {
+  color: var(--muted);
+  font-size: 0.7em;
+  margin-left: 1px;
+}
+
 /* Full-screen experience layout */
 
 .run {
