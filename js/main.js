@@ -46,7 +46,7 @@ function renderHome() {
       <a class="history-link" href="#/history">Your past runs${runsCount()}</a>
 
       <h2>Playground</h2>
-      <p class="muted">Find what feels fine and what feels bad. Pick a kind of slowness, set how much, and feel it.</p>
+      <p class="muted">Play around and find what feels fine and what feels bad.</p>
       <div class="cards">
         <a class="card" href="#/play/tap"><b>Tap response</b><span>Delay how quickly a keypad shows your taps.</span></a>
         <a class="card" href="#/play/scroll"><b>Scroll</b><span>Add latency, lower the frame rate, or slow down or freeze frames. Try each tab and see which feels worst.</span></a>
