@@ -70,6 +70,7 @@ function renderHome() {
         <li>Ink &amp; Switch: <a href="https://www.inkandswitch.com/slow-software/">Slow Software</a>.</li>
         <li>James Darpinian: <a href="https://james.darpinian.com/blog/latency/">Why Your Input Latency is Bad</a>. Phil Walton: <a href="https://chrome.dev/inp-demo/">INP demo</a>.</li>
       </ul>
+      <p class="muted footer">Source code: <a href="https://github.com/pyricau/feel-the-lag">github.com/pyricau/feel-the-lag</a></p>
     </div>`;
   return deviceBar(app.querySelector('.device-slot'));
 }
