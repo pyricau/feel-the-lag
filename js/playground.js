@@ -20,9 +20,9 @@ const SCROLL_CONTROLS = [
     explain: (f) =>
       f === 0
         ? 'Every frame shows where your finger is right now.'
-        : `Still ${fpsLabel(1)}: every frame is drawn on time, but shows where your finger was ${plural(f, 'frame')} (${msLabel(
+        : `Still ${fpsLabel(1)}: every frame is on time, but shows where your finger was ${plural(f, 'frame')} (${msLabel(
             f
-          )}) ago. Motion stays smooth; the list trails your finger like a rubber band.`,
+          )}) ago, so the list trails it smoothly. In code: nothing is slow, but the touch waits a frame or more before it's used (posted callbacks, async hops, queued frames).`,
     apply: (s, f) => s.setLatencyFrames(f),
   },
   {
@@ -35,7 +35,9 @@ const SCROLL_CONTROLS = [
     explain: (h) =>
       h === 1
         ? `A new frame on every refresh (every ${msLabel(1)}).`
-        : `Each frame stays on screen for ${plural(h, 'refresh')} (${msLabel(h)}), so motion moves in visible steps.`,
+        : `Each frame stays on screen for ${plural(h, 'refresh')} (${msLabel(
+            h
+          )}), so motion moves in steps. In code: animating on a timer instead of the display's frame callback, or a capped refresh rate (battery saver).`,
     apply: (s, h) => s.setHold(h),
   },
   {
@@ -52,7 +54,7 @@ const SCROLL_CONTROLS = [
       if (k === 1) return `Still fits in the ${budget} ms frame budget: no visible change. (This assumes the rest of the frame costs nothing.)`;
       return `Misses the ${budget} ms deadline, so every frame takes ${plural(k, 'refresh')}: ${fpsLabel(k)} instead of ${fpsLabel(
         1
-      )}, and what you see is ${msLabel(k - 1)} older. Going over the budget costs a whole refresh.`;
+      )}, and what you see is ${msLabel(k - 1)} older. In code: too much main-thread work per frame (new list rows, layout, image decoding, disk reads).`;
     },
     apply: (s, ms) => s.setOverrun(refreshesForWork(ms)),
   },
@@ -68,7 +70,7 @@ const SCROLL_CONTROLS = [
         ? 'No frozen frames.'
         : `${JANK_RATE * 100}% of frames, at random, freeze the screen for ${plural(f, 'frame')} (${msLabel(
             f
-          )}), then the list jumps to where it should be.`,
+          )}), then the list jumps to where it should be. In code: an occasional slow frame (a garbage collection pause, one expensive list item, a lock).`,
     apply: (s, f) => s.setFreezeFrames(f),
   },
 ];

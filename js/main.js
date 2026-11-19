@@ -39,6 +39,11 @@ function renderHome() {
       <p>When you tap, you judge cause and effect: did the screen react to me? Feedback within about 100 ms feels caused by your tap, and the average person only notices added tap latency around <b>69 ms</b>.</p>
       <p>When you drag or scroll, your finger is a moving reference point and the content is visibly behind it. People notice about <b>11 ms</b> of added latency there. That is less than one frame at 60 Hz (16.7 ms), so a single late or missed frame during a scroll is noticeable.</p>
 
+      <h2>Latency or slow frames?</h2>
+      <p>Both come from code, but from different mistakes, and they feel different. Try each tab of the scroll playground.</p>
+      <p><b>Slow frames:</b> the app has more work to do for a frame than fits before the next refresh: creating and binding new list rows, layout, decoding images, reading from disk. The frame misses its refresh, so the previous one stays on screen. If every frame is over budget, the frame rate drops <i>and</i> what you see is older. If only some are (a garbage collection pause, one expensive row), the scroll stutters: that's jank. Profilers show these as long frames.</p>
+      <p><b>Latency with smooth frames:</b> every frame is on time, but it shows an old touch. Nothing is slow; there are just extra steps between the touch and the frame that uses it, and each one usually costs a whole frame. The touch is handled in a callback posted for later, a state update goes through an async hop (a coroutine or promise that resumes on the next frame) before it's rendered, or the rendering pipeline queued extra frames after falling behind once and never caught up. A profiler shows nothing wrong, which is why this is easy to miss.</p>
+
       <h2>What "+0 ms" means</h2>
       <p>Every phone already has its own delay between your finger and the pixels: the touch sensor, the OS, the browser, and the display. A web page can't measure that, so everything here is added <i>on top of</i> this phone's own delay. Phones measured with high-speed cameras typically land around 50 to 100+ ms for a tap. Delays are added in whole frames, because the screen can only change once per refresh.</p>
       <div class="device-slot"></div>
