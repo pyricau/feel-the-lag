@@ -24,6 +24,14 @@ export class Keypad {
     this.display = root.querySelector('.kp-value');
     this.renderValue();
 
+    // iOS Safari still zooms on a double tap (a slow one, especially) despite
+    // touch-action: none and preventDefault() on pointerdown. Cancelling the
+    // touch itself is what stops it. Keys only listen to pointer events, so
+    // nothing here needs the click this suppresses.
+    root
+      .querySelector('.keypad')
+      .addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+
     const grid = root.querySelector('.kp-grid');
     this.pressed = new Map(); // pointerId -> key element
 

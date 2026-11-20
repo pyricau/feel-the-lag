@@ -62,8 +62,12 @@ export class Scroller {
     this.viewport.addEventListener('pointermove', (e) => this.move(e));
     this.viewport.addEventListener('pointerup', (e) => this.up(e));
     this.viewport.addEventListener('pointercancel', (e) => this.up(e));
-    // iOS Safari: stop the page itself from rubber-banding behind us.
-    this.viewport.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    // iOS Safari doesn't let pointer events (or touch-action) cancel its own
+    // gestures reliably: cancel the touches so the page neither rubber-bands
+    // behind us nor zooms on a double tap.
+    for (const type of ['touchstart', 'touchmove']) {
+      this.viewport.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+    }
 
     this.stop = engine.onFrame((t, tick) => this.frame(t, tick));
   }
