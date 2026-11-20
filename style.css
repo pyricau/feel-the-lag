@@ -23,6 +23,11 @@ body {
   color: var(--text);
   font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   -webkit-text-size-adjust: 100%;
+  /* iOS Safari ignores user-scalable=no, so this is what stops a quick double
+     tap anywhere on the page (between buttons, on text, on a panel that just
+     re-rendered) from zooming in. Effective touch-action intersects every
+     ancestor's, so setting it here covers the whole page. */
+  touch-action: manipulation;
 }
 
 body.fullscreen {
@@ -46,7 +51,6 @@ button,
   padding: 10px 14px;
   text-decoration: none;
   display: inline-block;
-  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
